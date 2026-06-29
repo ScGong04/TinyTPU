@@ -1,17 +1,20 @@
-// MAC cell is the module doing multiplications
+// MAC cell is the module that does multiplications
 // The std input width is defined as 16 bits and the std output width is defined as 32 bits
 import tpu_pkg::*;
 module mac_cell(
-    input wire i_clk,
-    input wire i_rst_n,
-    input wire i_acc_clr,
-    input wire [DATA_WIDTH-1:0] i_row, // row input
-    input wire [DATA_WIDTH-1:0] i_col, // column input
-    input wire [ACC_WIDTH-1:0] i_acc,
-    output wire [DATA_WIDTH-1:0] o_row,
-    output wire [DATA_WIDTH-1:0] o_col,
-    output wire [ACC_WIDTH-1:0] o_acc
+    input logic i_clk,
+    input logic i_rst_n,
+    input logic i_weight_load,
+    input logic [DATA_WIDTH-1:0] i_row, // row input
+    input logic [DATA_WIDTH-1:0] i_col, // column input
+    input logic [ACC_WIDTH-1:0] i_acc,
+    output logic [DATA_WIDTH-1:0] o_row,
+    output logic [DATA_WIDTH-1:0] o_col,
+    output logic [ACC_WIDTH-1:0] o_acc
 );
+    logic [DATA_WIDTH-1:0] weight_reg;
+    logic [DATA_WIDTH-1:0] row_reg;
+
     always @(posedge i_clk or negedge i_rst_n) begin
         if (!i_rst_n) begin // reset
             o_row <= '0;
@@ -19,9 +22,16 @@ module mac_cell(
             o_acc  <= '0;
         end
         else begin
-            o_row = i_row;           
-            o_col = i_col;
-            o_acc  = i_acc + i_row * i_col;
+            if (i_weight_load) begin
+                weight_reg <= i_col;
+                o_acc <= '0;
+            end 
+            else begin
+                row_reg <= i_row;
+                o_acc  <= i_acc + i_row * weight_reg;
+            end
         end
     end
+    assign o_row = row_reg;
+    assign o_col = weight_reg;
 endmodule
