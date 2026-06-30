@@ -15,23 +15,24 @@ module mac_cell(
     logic [DATA_WIDTH-1:0] weight_reg;
     logic [DATA_WIDTH-1:0] row_reg;
 
-    always @(posedge i_clk or negedge i_rst_n) begin
-        if (!i_rst_n) begin // reset
-            o_row <= '0;
-            o_col <= '0;
-            o_acc  <= '0;
-        end
-        else begin
+    always_ff @(posedge i_clk or negedge i_rst_n) begin
+        if (!i_rst_n) begin
+            weight_reg <= '0;
+            row_reg <= '0;
+            o_acc <= '0;
+        end else begin
             if (i_weight_load) begin
                 weight_reg <= i_col;
                 o_acc <= '0;
             end 
             else begin
                 row_reg <= i_row;
-                o_acc  <= i_acc + i_row * weight_reg;
+                o_acc <= i_acc + i_row * weight_reg;
             end
         end
     end
+
     assign o_row = row_reg;
-    assign o_col = weight_reg;
+    assign o_col = i_weight_load ? i_col : weight_reg;
+
 endmodule

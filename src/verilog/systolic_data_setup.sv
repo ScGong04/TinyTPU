@@ -22,8 +22,8 @@ module systolic_data_setup (
         end 
         else begin
             for (int i = 0; i < MAC_ARRAY_SIZE; i++) begin
-                // generate LTM
-                skew_pipe[i][0] <= i_data[i];
+                // feed 0 when invalid, so pipeline drains cleanly
+                skew_pipe[i][0] <= i_valid ? i_data[i] : '0;
                 valid_pipe[i][0] <= i_valid;
 
                 for (int j = 1; j < MAC_ARRAY_SIZE; j++) begin // delay generation
